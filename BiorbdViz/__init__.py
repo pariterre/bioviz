@@ -8,7 +8,8 @@ import biorbd
 from pyomeca import Markers3d
 from .biorbd_vtk import VtkModel, VtkWindow, Mesh, MeshCollection, RotoTrans, RotoTransCollection
 from PyQt5.QtWidgets import QSlider, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, \
-    QFileDialog, QScrollArea, QWidget, QMessageBox, QRadioButton, QGroupBox
+    QFileDialog, QScrollArea, QWidget, QMessageBox, QRadioButton, QGroupBox, QDialog, QComboBox, QDialogButtonBox, \
+    QSpinBox
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPalette, QColor, QPixmap, QIcon
 
@@ -109,9 +110,12 @@ class BiorbdViz:
             self.animated_Q = []
 
             self.play_stop_push_button = []
+            self.record_push_button = []
+            self.stop_record_push_button = []
             self.is_animating = False
             self.start_icon = QIcon(QPixmap(f"{os.path.dirname(__file__)}/ressources/start.png"))
             self.stop_icon = QIcon(QPixmap(f"{os.path.dirname(__file__)}/ressources/pause.png"))
+            self.record_icon = QIcon(QPixmap(f"{os.path.dirname(__file__)}/ressources/record.png"))
 
             self.double_factor = 10000
             self.sliders = list()
@@ -319,6 +323,20 @@ class BiorbdViz:
         frame_label.setPalette(self.palette_inactive)
         animation_slider_layout.addWidget(frame_label)
 
+        # record button
+        self.record_push_button = QPushButton()
+        self.record_push_button.setIcon(self.record_icon)
+        self.record_push_button.setPalette(self.palette_active)
+        self.record_push_button.released.connect(self.__initiate_recording)
+        animation_slider_layout.addWidget(self.record_push_button)
+
+        self.stop_record_push_button = QPushButton()
+        self.stop_record_push_button.setIcon(self.stop_icon)
+        self.stop_record_push_button.setPalette(self.palette_active)
+        self.stop_record_push_button.setEnabled(False)
+        self.stop_record_push_button.released.connect(self.__finalize_recording)
+        animation_slider_layout.addWidget(self.stop_record_push_button)
+
         self.movement_slider = (slider, frame_label)
 
         # Global placement of the window
@@ -425,6 +443,82 @@ class BiorbdViz:
         else:
             self.is_animating = True
             self.play_stop_push_button.setIcon(self.stop_icon)
+
+    def __initiate_recording(self):
+        # # Find the path to save
+        # options = QFileDialog.Options()
+        # options |= QFileDialog.DontUseNativeDialog
+        # file_name = QFileDialog.getSaveFileName(self.vtk_window,
+        #                                         "Save video to...", "video", "All Files (.mp4)", options=options)
+        # # If cancelled stop everything
+        # if not file_name[0]:
+        #     return
+        # # Manage extension of the file
+        # file_name, _ = os.path.splitext(file_name[0])
+        # file_name += ".mp4"  # Discard previous extension no matter what (only mp4 is available anyway)
+        #
+        # # Decide if the user click a each frame to create the video or if it comes from an animation
+        # if self.animated_Q is not None:
+        #     combobox_choices = ('for each frame of the loaded movement', 'each time I click the record button')
+        # else:
+        #     # If no movement is loaded, assume the user will press for each frame
+        #     combobox_choices= ('each time I click the record button', )
+        # combobox_choices = ('each time I click the record button', )
+        #
+        # # Create the options dialog box
+        # dialog = QDialog(self.vtk_window)
+        # dialog.setWindowTitle("Recording options")
+        # layout = QVBoxLayout(dialog)
+        # # Type of recording
+        # label_type = QLabel()
+        # label_type.setText("A frame should be added...")
+        # layout.addWidget(label_type)
+        # combobox_type = QComboBox()
+        # combobox_type.setPalette(self.palette_active)
+        # for item in combobox_choices:
+        #     combobox_type.addItem(item)
+        # layout.addWidget(combobox_type)
+        # # Frame rate
+        # label_frame = QLabel()
+        # label_frame.setText("Frame rate of the video:")
+        # layout.addWidget(label_frame)
+        # spin_frame = QSpinBox()
+        # spin_frame.setMinimum(0)
+        # spin_frame.setMaximum(100)
+        # spin_frame.setValue(30)
+        # spin_frame.setSingleStep(5)
+        # layout.addWidget(spin_frame)
+        # # Normal Cancel/Ok buttons
+        # button_box = QDialogButtonBox()
+        # button_box.addButton("Cancel", QDialogButtonBox.RejectRole)
+        # button_box.addButton("Ok", QDialogButtonBox.AcceptRole)
+        # button_box.rejected.connect(dialog.reject)
+        # button_box.accepted.connect(dialog.accept)
+        # layout.addWidget(button_box)
+        # answer = dialog.exec()
+        # if not answer:
+        #     return
+        #
+        # # Get the answers
+        # recording_type = combobox_type.currentText()
+        # recording_frequency = spin_frame.value()
+        #
+        # if recording_type == combobox_choices[-1]:
+        #     # Stopping is made manually when the person click at each frame
+        #     self.stop_record_push_button.setEnabled(True)
+        # elif recording_type == combobox_choices[0]:
+        #     raise NotImplementedError("Recording from a recorded movement is to come")
+        # else:
+        #     raise RuntimeError("There is no way you are here...")
+
+        # Prepare the video holder
+        # metadata = dict(title='Biorbd screen recorder', artist='Pariterre', comment='Enjoy!')
+        # writer = ffmpeg_writer(fps=recording_frequency, metadata=metadata)
+        self.vtk_window.grab().save("coucou.png")
+        print("done")
+
+    def __finalize_recording(self):
+        pass
 
     def __load_movement_from_button(self):
         # Load the actual movement
